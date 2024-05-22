@@ -2,7 +2,7 @@
 
 namespace PlantDB.Desserializers;
 
-public class PlantConverter : JsonConverter
+public class PlantConverter
 {
 
 }

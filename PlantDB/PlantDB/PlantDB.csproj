@@ -21,15 +21,19 @@
 
     <ItemGroup>
       <Compile Remove="JSON\**" />
+      <Compile Remove="Desserializers\**" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Remove="JSON\**" />
+      <EmbeddedResource Remove="Desserializers\**" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="JSON\**" />
+      <None Remove="Desserializers\**" />
     </ItemGroup>
+
 
 
 
