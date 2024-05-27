@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using Microsoft.EntityFrameworkCore;
+using PlantDB.Controllers;
+using RestSharp;
 using PlantDB.Types.Filtered;
 
 namespace PlantDB.Connection;
@@ -7,29 +9,35 @@ using Newtonsoft.Json.Linq;
 
 public static class PlantListRetriever
 {
+    private static DbContext _context;
     public static void GetPlantList()
     {
-        bool apiRunOut = false;
-        int apiSavepoint = 0;
-        string perenualApiKey = "sk-yUz2664cfc366009e4763";
-        string trefleApiKey = "8W7mG7-djVtqTNKVd7m88q3MgJJai0w5W9Cy19CZ8Ig";
+        int k = 0;
+        List<string> apiKeys = new List<string>();
+        apiKeys.Add("sk-lSG36650d454dca195631");
+        apiKeys.Add("sk-yUz2664cfc366009e4763");
+        apiKeys.Add("sk-RH5s6650baec4ee3d5632");
+        apiKeys.Add("sk-xpZH66509c5155e255630");
+        apiKeys.Add("sk-bC9266436bfad30f45481");
+        
         var perenualClient = new RestClient("https://perenual.com/api/");
-        var trefleClient = new RestClient("https://trefle.io/api/v1/");
 
         List<PlantSummary> plantSummaries = new List<PlantSummary>();
         List<PlantDetailsSummary> plantDetailsSummaries = new List<PlantDetailsSummary>();
-        List<InformationsSummary> informationsSummaries = new List<InformationsSummary>();
+        List<DangerousPlantsSummary> dangerousPlantsSummaries = new List<DangerousPlantsSummary>();
         List<CultivationSummary> cultivationSummaries = new List<CultivationSummary>();
 
-        for (int j = 0; j < 1; j++)
-        {
-            plantSummaries = new List<PlantSummary>();
-            GetPerenualPlantPage(j + 1, perenualApiKey, perenualClient, plantSummaries);
+        DatabaseInsert dbInsert = new DatabaseInsert(_context);
 
-            for (int i = apiSavepoint; i < plantSummaries.Count; i++) 
+        for (int j = 0; j < 3; j++)
+        {
+            plantSummaries = new List<PlantSummary>();  //UMA PÁGINA TEM 30 PLANTAS
+            GetPerenualPlantPage(j + 1, apiKeys[k], perenualClient, plantSummaries);
+
+            for (int i = 0; i < plantSummaries.Count; i++) //IREI PERCORRER AS 30 PLANTAS
             {
 
-                var plantDetailsRequest = new RestRequest($"species/details/{i + 1}?key={perenualApiKey}")
+                var plantDetailsRequest = new RestRequest($"species/details/{i + 1}?key={apiKeys[k]}")
                 {
                     OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; }
                 };
@@ -42,12 +50,11 @@ public static class PlantListRetriever
                     PlantDetailsSummary plantDetailsSummary = new PlantDetailsSummary
                     {
                         IdDetail = (int)jsonDetailsResponse["id"],
-                        Flowers = (bool)jsonDetailsResponse["flowers"],
-                        Cones = (bool)jsonDetailsResponse["cones"],
-                        Fruits = (bool)jsonDetailsResponse["fruits"],
-                        Edible_Fruit = (bool)jsonDetailsResponse["edible_fruit"],
-                        Leaf = (bool)jsonDetailsResponse["leaf"],
-                        Medicinal = (bool)jsonDetailsResponse["medicinal"],
+                        EdibleFruit = (bool)jsonDetailsResponse["edible_fruit"],
+                        Growth_Rate = (string)jsonDetailsResponse["growth_rate"],
+                        Cuisine = (bool)jsonDetailsResponse["cuisine"],
+                        Invasive = (bool)jsonDetailsResponse["invasive"],
+                        Indoor = (bool)jsonDetailsResponse["indoor"],
                         Scientific_name = (string)jsonDetailsResponse["scientific_name"][0]
                     };
                     plantDetailsSummaries.Add(plantDetailsSummary);
@@ -60,65 +67,30 @@ public static class PlantListRetriever
                         ScientificName = (string)jsonDetailsResponse["scientific_name"][0]
                     };
                     cultivationSummaries.Add(cultivationSummary);
-
-                    string plantSciName = plantSummaries[i].ScientificName;
-                    plantSciName = plantSciName.Trim().Replace(" ", "%20");
-                    var plantTrefleRequest =
-                        new RestRequest($"plants?token={trefleApiKey}&filter[scientific_name]={plantSciName}")
-                        {
-                            OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; }
-                        };
-                    try
+                    DangerousPlantsSummary dangerousPlantsSummary = new DangerousPlantsSummary
                     {
-                        var trefleQueryResult = trefleClient.ExecuteGet(plantTrefleRequest);
-                        JObject jsonTrefleResponse = JObject.Parse(trefleQueryResult.Content);
-
-                        if (jsonTrefleResponse.TryGetValue("data", out JToken dataToken) && dataToken.HasValues)
-                        {
-                            JObject dataObject = (JObject)dataToken.First;
-
-                            InformationsSummary informationsSummary = new InformationsSummary
-                            {
-                                Id = plantSummaries[i].Id,
-                                Slug = (string)dataObject["slug"] ?? string.Empty,
-                                Year = dataObject["year"] != null ? (int)dataObject["year"] : 0,
-                                Bibliography = (string)dataObject["bibliography"] ?? string.Empty,
-                                Author = (string)dataObject["author"] ?? string.Empty,
-                                Status = (string)dataObject["status"] ?? string.Empty,
-                                Rank = (string)dataObject["rank"] ?? string.Empty,
-                                Family_Common_Name = (string)dataObject["family_common_name"] ?? string.Empty,
-                                Genus = (string)dataObject["genus"] ?? string.Empty,
-                                Family = (string)dataObject["family"] ?? string.Empty,
-                                ScientificName = plantSummaries[i].ScientificName,
-                            };
-                            informationsSummaries.Add(informationsSummary);
-                        }
-                        else
-                        {
-                            plantSciName = plantSciName.Replace("%20", " ");
-                            Console.WriteLine("No data found for " + plantSciName +
-                                              " in Trefle. Removing it from other lists");
-                            PlantSummary plantToRemove = plantSummaries.Find(p => p.ScientificName == plantSciName);
-                            PlantDetailsSummary plantDetailsToRemove =
-                                plantDetailsSummaries.Find(p => p.Scientific_name == plantSciName);
-                            CultivationSummary plantCultivationToRemove =
-                                cultivationSummaries.Find(p => p.ScientificName == plantSciName);
-                            plantSummaries.Remove(plantToRemove);
-                            plantDetailsSummaries.Remove(plantDetailsToRemove);
-                            cultivationSummaries.Remove(plantCultivationToRemove);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e + "Trefle FALHOU NO NOME " + plantSciName);
-                        throw;
-                    }
+                        Id = (int)jsonDetailsResponse["id"],
+                        Care_Level = (string)jsonDetailsResponse["care_level"],
+                        Thorny = (bool)jsonDetailsResponse["thorny"],
+                        Poisonous_To_Humans = (bool)jsonDetailsResponse["poisonous_to_humans"],
+                        Poisonous_To_Pets = (bool)jsonDetailsResponse["poisonous_to_pets"],
+                        ScientificName = (string)jsonDetailsResponse["scientific_name"][0]
+                    };
+                    dangerousPlantsSummaries.Add(dangerousPlantsSummary);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e + "Perenual FALHOU NO I DE VALOR " + i);
-                    Console.WriteLine(i);
+                    Console.WriteLine(e + " Perenual FALHOU NO ITEM DE VALOR " + i + "DA PAGINA " + j + " CICLO " + k);
                     throw;
+                }
+            }
+            
+            if (j == 3) //TROCA DE CHAVE
+            {
+                k += 1;
+                if (k < apiKeys.Count) //PARA IMPEDIR LISTA DE ESTOURAR
+                {
+                    j = 0;  //REINICIA O CICLO    
                 }
             }
         }
@@ -134,7 +106,7 @@ public static class PlantListRetriever
             Console.WriteLine(pDet.Scientific_name + " - " + pDet.IdDetail);
         }
         Console.WriteLine("-PLANTS-");
-        foreach (InformationsSummary pInfo in informationsSummaries)
+        foreach (DangerousPlantsSummary pInfo in dangerousPlantsSummaries)
         {
             Console.WriteLine(pInfo.ScientificName + " - " + pInfo.Id);
         }
@@ -143,6 +115,9 @@ public static class PlantListRetriever
         {
             Console.WriteLine(pCul.ScientificName + " - " + pCul.Id);
         }
+        
+        
+        
     }
 
     private static void GetPerenualPlantPage(int pageNumber, string perenualKey, RestClient perenualClient, List<PlantSummary> plantSummaries)
