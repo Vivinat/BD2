@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PlantDB")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+985fc679adee51034dd22886ec5366cf4fd822ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("PlantDB")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PlantDB")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
