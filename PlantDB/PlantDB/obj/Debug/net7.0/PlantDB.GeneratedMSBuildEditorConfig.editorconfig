@@ -8,6 +8,4 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = PlantDB
-build_property.ProjectDir = /home/vinicius/Documentos/GitHub/BD2/PlantDB/PlantDB/
-build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.ProjectDir = C:\Users\Particular\Documents\GitHub\BD2\PlantDB\PlantDB\
