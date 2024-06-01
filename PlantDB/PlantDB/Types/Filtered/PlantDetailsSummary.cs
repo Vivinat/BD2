@@ -1,14 +1,25 @@
-﻿namespace PlantDB.Types.Filtered;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PlantDB.Types.Filtered;
+
+public enum Growthrate
+{
+    nothing,
+    low,
+    medium,
+    moderate,
+    high
+}
 
 public class PlantDetailsSummary
 {
-    public int IdDetail{ get; set; }
-    public bool EdibleFruit { get; set; }
-    public string Growth_Rate { get; set; }
-    public bool Cuisine { get; set; }
-    public bool Invasive { get; set; }
-    public bool Indoor { get; set; }
-    public bool Rare { get; set; }
-    public string Rare_Level { get; set; }
-    public string Scientific_name{ get; set; }
+    [Key]public int id_detail{ get; set; }
+    public bool edible_fruit { get; set; }
+    public Growthrate growth_rate { get; set; }
+    public bool cuisine { get; set; }
+    public bool invasive { get; set; }
+    public bool indoor { get; set; }
+    public string scientific_name{ get; set; }
+    public bool medicinal { get; set; }
 }

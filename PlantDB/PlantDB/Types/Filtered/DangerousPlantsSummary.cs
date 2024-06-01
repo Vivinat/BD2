@@ -1,11 +1,22 @@
-﻿namespace PlantDB.Types.Filtered;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
+namespace PlantDB.Types.Filtered;
+
+public enum Carelevel
+{
+    nothing,
+    low,
+    medium,
+    moderate,
+    high
+}
 public class DangerousPlantsSummary
 {
-    public int Id { get; set; }
-    public string Care_Level { get; set; }
-    public bool Thorny { get; set; }
-    public bool Poisonous_To_Humans { get; set; }
-    public bool Poisonous_To_Pets { get; set; }
-    public string ScientificName { get; set; }
+    [Key]public int id_dangerousp { get; set; }
+    public Carelevel care_level { get; set; }
+    public bool thorny { get; set; }
+    public bool poisonous_to_humans { get; set; }
+    public bool poisonous_to_pets { get; set; }
+    public string scientific_name { get; set; }
 }

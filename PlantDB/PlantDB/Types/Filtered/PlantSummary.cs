@@ -1,9 +1,11 @@
-﻿namespace PlantDB.Types.Filtered;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-//PLANT
+namespace PlantDB.Types.Filtered;
+
 public class PlantSummary
 {
-    public int Id { get; set; }
-    public string CommonName { get; set; }
-    public string ScientificName { get; set; }
+    public int id_plant { get; set; }
+    public string common_name { get; set; }
+    [Key][DatabaseGenerated(DatabaseGeneratedOption.None)]public string scientific_name { get; set; }
 }
