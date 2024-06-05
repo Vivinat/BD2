@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
 using PlantDB.Context;
 using PlantDB.Controllers;
 using RestSharp;
@@ -14,21 +12,30 @@ public static class PlantListRetriever
 {
     public static void GetPlantList()
     {
+        //POISONOUS HUMANS E PETS, THORNY, CUISINE
         int k = 0;
         List<string> apiKeys = new List<string>();
-        //apiKeys.Add("sk-lSG36650d454dca195631"); 
-        //apiKeys.Add("sk-yUz2664cfc366009e4763"); 
-        //apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
-        //apiKeys.Add("sk-xpZH66509c5155e255630"); 
-        //apiKeys.Add("sk-bC9266436bfad30f45481"); 
-        //apiKeys.Add("sk-9vpf66586661475685717"); 
-        //apiKeys.Add("sk-hLrI665872198d9aa5720"); 
-        //apiKeys.Add("sk-Ppo9665878f67ab255721");
-        //apiKeys.Add("sk-YlgC665879bdd93345722"); 
-        //apiKeys.Add("sk-qYla66587a2e10e6b5723");
-        //apiKeys.Add("sk-yGwl665920b439d805731");
-        //apiKeys.Add("sk-3Wnh66592196d237e5732"); 
-        //apiKeys.Add("sk-oWiu6659221191ef85733");
+        apiKeys.Add("sk-lSG36650d454dca195631"); 
+        apiKeys.Add("sk-yUz2664cfc366009e4763"); 
+        apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
+        apiKeys.Add("sk-xpZH66509c5155e255630"); 
+        apiKeys.Add("sk-bC9266436bfad30f45481"); 
+        apiKeys.Add("sk-9vpf66586661475685717"); 
+        apiKeys.Add("sk-hLrI665872198d9aa5720"); 
+        apiKeys.Add("sk-Ppo9665878f67ab255721");
+        apiKeys.Add("sk-YlgC665879bdd93345722"); 
+        apiKeys.Add("sk-qYla66587a2e10e6b5723");
+        apiKeys.Add("sk-yGwl665920b439d805731");
+        apiKeys.Add("sk-3Wnh66592196d237e5732"); 
+        apiKeys.Add("sk-oWiu6659221191ef85733");
+        apiKeys.Add("sk-cSDj666078f9b26105808");
+        apiKeys.Add("sk-oFeY66607937773a05809");
+        apiKeys.Add("sk-F9Yn6660796c692f35810");
+        apiKeys.Add("sk-cqrL666079a71fc4c5811");
+        apiKeys.Add("sk-axFP666079f91ee4b5812");
+        apiKeys.Add("sk-QfQE6660acf95d0ed5815");
+        apiKeys.Add("sk-b5oH6660ae6423af45818");
+        apiKeys.Add("sk-3FiE6660aeb8c63765817");
         
         int currentPerenualId = 0;
         int pagecheckpoint = 0;
@@ -123,12 +130,22 @@ public static class PlantListRetriever
                     {
                         edible_fruit = (bool)jsonDetailsResponse["edible_fruit"],
                         growth_rate = growthrateToInsert,
-                        cuisine = (bool)jsonDetailsResponse["cuisine"],
                         invasive = (bool)jsonDetailsResponse["invasive"],
                         indoor = (bool)jsonDetailsResponse["indoor"],
                         medicinal = (bool)jsonDetailsResponse["medicinal"],
                         scientific_name = scientificName
                     };
+                    string cuisineStr = (string)jsonDetailsResponse["cuisine"];
+                    if (cuisineStr == "true")
+                    {
+                        plantDetailsSummary.cuisine = true;
+                        Console.WriteLine("Is cuisine");
+                    }
+                    else
+                    {
+                        plantDetailsSummary.cuisine = false;
+                    }
+                    
                     plantDetailsSummaries.Add(plantDetailsSummary);
                     CultivationSummary cultivationSummary = new CultivationSummary
                     {
@@ -151,15 +168,46 @@ public static class PlantListRetriever
                         levelToInsert = Carelevel.nothing;
                     }
                     
+                    
                     DangerousPlantsSummary dangerousPlantsSummary = new DangerousPlantsSummary
                     {
-                        
                         care_level = levelToInsert,
-                        thorny = (bool)jsonDetailsResponse["thorny"],
-                        poisonous_to_humans = (bool)jsonDetailsResponse["poisonous_to_humans"],
-                        poisonous_to_pets = (bool)jsonDetailsResponse["poisonous_to_pets"],
                         scientific_name = scientificName
                     };
+                    
+                    int poisonousHumanInt = (int)jsonDetailsResponse["poisonous_to_humans"];
+                    int poisonousPetInt = (int)jsonDetailsResponse["poisonous_to_pets"];
+                    int thornInt = (int)jsonDetailsResponse["thorny"];
+                    if (poisonousHumanInt == 1)
+                    {
+                        dangerousPlantsSummary.poisonous_to_humans = true;
+                        Console.WriteLine("Is poisonous to humans");
+                    }
+                    else
+                    {
+                        dangerousPlantsSummary.poisonous_to_humans = false;
+                    }
+                    
+                    if (poisonousPetInt == 1)
+                    {
+                        dangerousPlantsSummary.poisonous_to_pets = true;
+                        Console.WriteLine("Is poisonous to pets");
+                    }
+                    else
+                    {
+                        dangerousPlantsSummary.poisonous_to_pets = false;
+                    }
+                    
+                    if (thornInt == 1)
+                    {
+                        dangerousPlantsSummary.thorny = true;
+                        Console.WriteLine("Is thorny");
+                    }
+                    else
+                    {
+                        dangerousPlantsSummary.thorny = false;
+                    }
+                    
                     dangerousPlantsSummaries.Add(dangerousPlantsSummary);
                     Console.WriteLine("Inserido planta de ID no perenual " + currentPerenualId);
                 }
