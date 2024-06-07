@@ -17,7 +17,6 @@ public class PlantDetailsSummary
     [Key]public int id_detail{ get; set; }
     public bool edible_fruit { get; set; }
     public Growthrate growth_rate { get; set; }
-    public bool cuisine { get; set; }
     public bool invasive { get; set; }
     public bool indoor { get; set; }
     public string scientific_name{ get; set; }

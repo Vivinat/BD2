@@ -15,10 +15,10 @@ public static class PlantListRetriever
         //POISONOUS HUMANS E PETS, THORNY, CUISINE
         int k = 0;
         List<string> apiKeys = new List<string>();
-        apiKeys.Add("sk-lSG36650d454dca195631"); 
-        apiKeys.Add("sk-yUz2664cfc366009e4763"); 
-        apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
-        apiKeys.Add("sk-xpZH66509c5155e255630"); 
+        //apiKeys.Add("sk-lSG36650d454dca195631"); 
+        //apiKeys.Add("sk-yUz2664cfc366009e4763");
+        //apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
+        //apiKeys.Add("sk-xpZH66509c5155e255630"); 
         apiKeys.Add("sk-bC9266436bfad30f45481"); 
         apiKeys.Add("sk-9vpf66586661475685717"); 
         apiKeys.Add("sk-hLrI665872198d9aa5720"); 
@@ -75,7 +75,7 @@ public static class PlantListRetriever
         {
             pagecheckpoint += 1;
             Console.WriteLine("Página " + pagecheckpoint + " do Perenual Exigida");
-            JArray pageResults = GetPerenualPlantPage(pagecheckpoint, apiKeys[k], perenualClient, plantSummaries);
+            JArray pageResults = GetPerenualPlantPage(pagecheckpoint, apiKeys[k], perenualClient);
 
             for (int i = 0; i < 30; i++) //IREI PERCORRER AS 30 PLANTAS
             {
@@ -135,21 +135,10 @@ public static class PlantListRetriever
                         medicinal = (bool)jsonDetailsResponse["medicinal"],
                         scientific_name = scientificName
                     };
-                    string cuisineStr = (string)jsonDetailsResponse["cuisine"];
-                    if (cuisineStr == "true")
-                    {
-                        plantDetailsSummary.cuisine = true;
-                        Console.WriteLine("Is cuisine");
-                    }
-                    else
-                    {
-                        plantDetailsSummary.cuisine = false;
-                    }
-                    
                     plantDetailsSummaries.Add(plantDetailsSummary);
+
                     CultivationSummary cultivationSummary = new CultivationSummary
                     {
-                        cycle = (string)jsonDetailsResponse["cycle"],
                         watering = (string)jsonDetailsResponse["watering"],
                         sunlight = (string)jsonDetailsResponse["sunlight"][0],
                         scientific_name = scientificName
@@ -168,45 +157,12 @@ public static class PlantListRetriever
                         levelToInsert = Carelevel.nothing;
                     }
                     
-                    
                     DangerousPlantsSummary dangerousPlantsSummary = new DangerousPlantsSummary
                     {
                         care_level = levelToInsert,
-                        scientific_name = scientificName
+                        scientific_name = scientificName,
+                        poisonous_to_pets = (bool)jsonDetailsResponse["poisonous_to_pets"]
                     };
-                    
-                    int poisonousHumanInt = (int)jsonDetailsResponse["poisonous_to_humans"];
-                    int poisonousPetInt = (int)jsonDetailsResponse["poisonous_to_pets"];
-                    int thornInt = (int)jsonDetailsResponse["thorny"];
-                    if (poisonousHumanInt == 1)
-                    {
-                        dangerousPlantsSummary.poisonous_to_humans = true;
-                        Console.WriteLine("Is poisonous to humans");
-                    }
-                    else
-                    {
-                        dangerousPlantsSummary.poisonous_to_humans = false;
-                    }
-                    
-                    if (poisonousPetInt == 1)
-                    {
-                        dangerousPlantsSummary.poisonous_to_pets = true;
-                        Console.WriteLine("Is poisonous to pets");
-                    }
-                    else
-                    {
-                        dangerousPlantsSummary.poisonous_to_pets = false;
-                    }
-                    
-                    if (thornInt == 1)
-                    {
-                        dangerousPlantsSummary.thorny = true;
-                        Console.WriteLine("Is thorny");
-                    }
-                    else
-                    {
-                        dangerousPlantsSummary.thorny = false;
-                    }
                     
                     dangerousPlantsSummaries.Add(dangerousPlantsSummary);
                     Console.WriteLine("Inserido planta de ID no perenual " + currentPerenualId);
@@ -245,7 +201,7 @@ public static class PlantListRetriever
         }
     }
 
-    private static JArray GetPerenualPlantPage(int pageNumber, string perenualKey, RestClient perenualClient, List<PlantSummary> plantSummaries)
+    private static JArray GetPerenualPlantPage(int pageNumber, string perenualKey, RestClient perenualClient)
     {
         var plantRequest = new RestRequest($"species-list?key={perenualKey}&page={pageNumber}")
         {

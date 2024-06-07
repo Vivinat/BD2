@@ -16,7 +16,8 @@ public static class Corrector
         //apiKeys.Add("sk-gtjB665eff981f0055796"); 
         //apiKeys.Add("sk-gKF2665f00044ef195797");
         //apiKeys.Add("sk-jCm6665e566e258225787"); 
-        apiKeys.Add("sk-RH5s6650baec4ee3d5632"); //CORINGA
+        apiKeys.Add("sk-WQN16660e436953f65821");
+
         int k = 0;
         int pagecheckpoint = 0;
         string scientificName;
@@ -57,7 +58,7 @@ public static class Corrector
                         var plantToChange = dbContext.plant_details.FirstOrDefault(p => p.scientific_name == scientificName);
                         if (plantToChange != null)
                         {
-                            plantToChange.indoor = true;
+                            plantToChange.edible_fruit = true;
                             Console.WriteLine("Corrected " + scientificName );
                             dbContext.SaveChanges();
                         }
@@ -82,7 +83,7 @@ public static class Corrector
     
     private static JArray GetPerenualEdiblePage(int pageNumber, string perenualKey, RestClient perenualClient)
     {
-        var plantRequest = new RestRequest($"species-list?key={perenualKey}&indoor=1&page={pageNumber}")
+        var plantRequest = new RestRequest($"species-list?key={perenualKey}&edible=1&page={pageNumber}")
         {
             OnBeforeDeserialization = resp => { resp.ContentType = "application/json";}
         };
