@@ -28,8 +28,8 @@ dotnet add package Microsoft.EntityFrameworkCore
 
 Este projeto foi desenvolvido por:
 
-Danubia Borges - 2019018489
-Caio Miranda Caetano Antunes - 2021024231
-Giulia Garcia Castro Rodrigues - 2020000191
-Vinicius Vieira Mota - 2020027838
-Vinicius Ribeiro Marques - 2020019184
+- **Danubia Borges - 2019018489**
+- **Caio Miranda Caetano Antunes - 2021024231**
+- **Giulia Garcia Castro Rodrigues - 2020000191**
+- **Vinicius Vieira Mota - 2020027838**
+- **Vinicius Ribeiro Marques - 2020019184**
