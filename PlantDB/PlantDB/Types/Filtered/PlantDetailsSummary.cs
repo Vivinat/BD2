@@ -14,7 +14,7 @@ public enum Growthrate
 
 public class PlantDetailsSummary
 {
-    [Key]public int id_detail{ get; set; }
+    [Key]public int id_detail{ get; set; }      //Chave primária
     public bool edible_fruit { get; set; }
     public Growthrate growth_rate { get; set; }
     public bool invasive { get; set; }

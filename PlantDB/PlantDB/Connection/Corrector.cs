@@ -1,27 +1,25 @@
 ﻿using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using PlantDB.Context;
-using PlantDB.Controllers;
-using PlantDB.Types.Filtered;
 using RestSharp;
 
 namespace PlantDB.Connection;
 
-public static class Corrector
+public static class Corrector  //Corrector foi criado para corrigir dados faltantes/nulos a partir de pesquisas em endpoints especificos da API
 {
     public static void CorrectColumns()
     {
-        var perenualClient = new RestClient("https://perenual.com/api/");
-        List<string> apiKeys = new List<string>();
-        //apiKeys.Add("sk-gtjB665eff981f0055796"); 
-        //apiKeys.Add("sk-gKF2665f00044ef195797");
-        //apiKeys.Add("sk-jCm6665e566e258225787"); 
+        var perenualClient = new RestClient("https://perenual.com/api/");       //Criação do cliente
+        List<string> apiKeys = new List<string>();      //Lista de chaves
+        apiKeys.Add("sk-gtjB665eff981f0055796"); 
+        apiKeys.Add("sk-gKF2665f00044ef195797");
+        apiKeys.Add("sk-jCm6665e566e258225787"); 
         apiKeys.Add("sk-WQN16660e436953f65821");
 
-        int k = 0;
-        int pagecheckpoint = 0;
-        string scientificName;
-        string jsonString;
+        int k = 0;              //Identador para lista de chaves
+        int pagecheckpoint = 0; //Em qual página parou
+        string scientificName;  
+        string jsonString;      //JSON que guarda a página
         string jsonPath =
             "C:\\Users\\Particular\\Documents\\GitHub\\BD2\\PlantDB\\PlantDB\\Connection\\pageCorrector.json";
         using (StreamReader reader = new StreamReader(jsonPath))
@@ -29,7 +27,7 @@ public static class Corrector
             jsonString = reader.ReadToEnd();
         }
         JsonDocument doc = JsonDocument.Parse(jsonString);
-        if (doc.RootElement.TryGetProperty("page", out JsonElement element))
+        if (doc.RootElement.TryGetProperty("page", out JsonElement element))        //Validando número da página obtido do JSON
         {
             if (element.ValueKind == JsonValueKind.Number)
             {
@@ -45,20 +43,20 @@ public static class Corrector
             Console.WriteLine("Falha no JSON de pagina");
         }
 
-        for (int j = 0; j < 1; j++)
+        for (int j = 0; j < 1; j++)             //Roda apenas uma vez
         {
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++)       //Com uma key, consigo fazer 100 requisições
             {
                 JArray pageResults = GetPerenualEdiblePage(pagecheckpoint, apiKeys[k], perenualClient);
-                foreach (JObject plant in pageResults)
+                foreach (JObject plant in pageResults)      //Percorro a lista de tipo JSON Object e extraio as informações
                 {
-                    scientificName = (string)plant["scientific_name"][0];
+                    scientificName = (string)plant["scientific_name"][0];   //Pego o nome cientifico para fazer o update
                     using (var dbContext = new DBContext())     
                     {
                         var plantToChange = dbContext.plant_details.FirstOrDefault(p => p.scientific_name == scientificName);
                         if (plantToChange != null)
                         {
-                            plantToChange.edible_fruit = true;
+                            plantToChange.edible_fruit = true;          //Troco o dado que me conver
                             Console.WriteLine("Corrected " + scientificName );
                             dbContext.SaveChanges();
                         }
@@ -70,9 +68,9 @@ public static class Corrector
                 pagecheckpoint++;
             }
             k += 1;
-            if (k < apiKeys.Count) //PARA IMPEDIR LISTA DE ESTOURAR
+            if (k < apiKeys.Count) //Impede lista de chaves de estourar
             {
-                j = -1; //REINICIA O CICLO
+                j = -1;             //Reinicia o ciclo
                 Console.WriteLine("Trocando para a chave " + apiKeys[k]);
             }
         }
@@ -80,10 +78,10 @@ public static class Corrector
 
     }
     
-    
+    //Devolve uma página contendo 30 plantas. Dados retornam como uma JSON array
     private static JArray GetPerenualEdiblePage(int pageNumber, string perenualKey, RestClient perenualClient)
     {
-        var plantRequest = new RestRequest($"species-list?key={perenualKey}&edible=1&page={pageNumber}")
+        var plantRequest = new RestRequest($"species-list?key={perenualKey}&edible=1&page={pageNumber}")    //Ultimo endpoint usado foi para corrigir atributos faltantes na coluna indoor
         {
             OnBeforeDeserialization = resp => { resp.ContentType = "application/json";}
         };

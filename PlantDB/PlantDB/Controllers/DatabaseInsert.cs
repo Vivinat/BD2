@@ -13,8 +13,8 @@ public class DatabaseInsert(DBContext context)
     {
         try
         {
-            context.AddRange(plantSummaries);
-            context.SaveChanges();
+            context.AddRange(plantSummaries);       //Adiciona a lista completa
+            context.SaveChanges();                  //COMMIT
             context.AddRange(cultivationSummaries);
             context.SaveChanges();
             context.AddRange(dangerousPlantsSummaries);

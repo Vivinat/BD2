@@ -7,7 +7,7 @@ namespace PlantDB // Note: actual namespace depends on the project name.
     {
         static void Main(string[] args)
         {
-            PlantListRetriever.GetPlantList();
+            PlantListRetriever.GetPlantList();  //Por PlantListRetriever ser static, pode-se chama-la sem instanciar
         } 
     }
 }

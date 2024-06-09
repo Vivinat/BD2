@@ -12,13 +12,13 @@ public static class PlantListRetriever
 {
     public static void GetPlantList()
     {
-        //POISONOUS HUMANS E PETS, THORNY, CUISINE
-        int k = 0;
-        List<string> apiKeys = new List<string>();
-        //apiKeys.Add("sk-lSG36650d454dca195631"); 
-        //apiKeys.Add("sk-yUz2664cfc366009e4763");
-        //apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
-        //apiKeys.Add("sk-xpZH66509c5155e255630"); 
+        
+        int k = 0;      //Identador da lista
+        List<string> apiKeys = new List<string>();      //Lista de chaves de API
+        apiKeys.Add("sk-lSG36650d454dca195631"); 
+        apiKeys.Add("sk-yUz2664cfc366009e4763");
+        apiKeys.Add("sk-RH5s6650baec4ee3d5632"); 
+        apiKeys.Add("sk-xpZH66509c5155e255630"); 
         apiKeys.Add("sk-bC9266436bfad30f45481"); 
         apiKeys.Add("sk-9vpf66586661475685717"); 
         apiKeys.Add("sk-hLrI665872198d9aa5720"); 
@@ -37,17 +37,17 @@ public static class PlantListRetriever
         apiKeys.Add("sk-b5oH6660ae6423af45818");
         apiKeys.Add("sk-3FiE6660aeb8c63765817");
         
-        int currentPerenualId = 0;
-        int pagecheckpoint = 0;
-        string scientificName;
+        int currentPerenualId = 0;          //Id de iteração, apenas para saber em qual planta estamos
+        int pagecheckpoint = 0;             //Em qual página parou
+        string scientificName;              //Cria uma lista de nomes cientificos para impedir inserções duplicadas no banco
         List<string> scientificNameVerifier = new List<string>();
-        var perenualClient = new RestClient("https://perenual.com/api/");
-        List<PlantSummary> plantSummaries = new List<PlantSummary>();
+        var perenualClient = new RestClient("https://perenual.com/api/");     //Cria o cliente da API
+        List<PlantSummary> plantSummaries = new List<PlantSummary>();               //Listas para as 4 tabelas
         List<PlantDetailsSummary> plantDetailsSummaries = new List<PlantDetailsSummary>();
         List<DangerousPlantsSummary> dangerousPlantsSummaries = new List<DangerousPlantsSummary>();
         List<CultivationSummary> cultivationSummaries = new List<CultivationSummary>();
         
-        string jsonString;
+        string jsonString;      //Define e resgata o JSON que contem a página onde parei
         string jsonPath =
             "C:\\Users\\Particular\\Documents\\GitHub\\BD2\\PlantDB\\PlantDB\\Connection\\pageManager.json";
         using (StreamReader reader = new StreamReader(jsonPath))
@@ -74,47 +74,47 @@ public static class PlantListRetriever
         for (int j = 0; j < 3; j++)
         {
             pagecheckpoint += 1;
-            Console.WriteLine("Página " + pagecheckpoint + " do Perenual Exigida");
+            Console.WriteLine("Página " + pagecheckpoint + " do Perenual Exigida");     //Pede uma página
             JArray pageResults = GetPerenualPlantPage(pagecheckpoint, apiKeys[k], perenualClient);
 
-            for (int i = 0; i < 30; i++) //IREI PERCORRER AS 30 PLANTAS
+            for (int i = 0; i < 30; i++) //Cada página possui 30 plantas
             {
                 var plantDetailsRequest = new RestRequest($"species/details/{i+1}?key={apiKeys[k]}")
                 {
                     OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; }
-                };
+                };  //Prepara uma requisição especifica para cada uma das 30 plantas
                 
                 try
                 {
                     
                     currentPerenualId += 1;
-                    JObject plant = (JObject)pageResults[i];
-                    scientificName = (string)plant["scientific_name"][0];
+                    JObject plant = (JObject)pageResults[i];        //A partir de uma planta na página
+                    scientificName = (string)plant["scientific_name"][0];   //Coleta seu nome cientifico
                     
-                    if (scientificNameVerifier.Exists(p => p == scientificName))
+                    if (scientificNameVerifier.Exists(p => p == scientificName))    //Se está na lista, já foi adicionada
                     {
-                        Console.WriteLine($"Scientific name{scientificName} already on database");
+                        Console.WriteLine($"Scientific name{scientificName} already on database");  
                         continue;
                     }
                     else
                     {
-                        scientificNameVerifier.Add(scientificName);
+                        scientificNameVerifier.Add(scientificName); //Se não está na lista, precisa ser adicionada.
                     }
                     
-                    PlantSummary plantSummary = new PlantSummary
+                    PlantSummary plantSummary = new PlantSummary    //Cria um objeto para a tabela plant
                     {
                         id_plant = (int)plant["id"],
                         common_name = (string)plant["common_name"],
                         scientific_name = scientificName,
                     };
                     
-                    plantSummaries.Add(plantSummary);
+                    plantSummaries.Add(plantSummary);               //Adiciona na lista
                     Console.WriteLine("Plant name: " + scientificName);
                     
                     var detailsQueryResult = perenualClient.ExecuteGet(plantDetailsRequest);
                     JObject jsonDetailsResponse = JObject.Parse(detailsQueryResult.Content);
                     
-                    string growthRateString = (string)jsonDetailsResponse["growth_rate"];
+                    string growthRateString = (string)jsonDetailsResponse["growth_rate"];   //Conversão de string para enum
                     Growthrate tempGrowthrate;
                     Growthrate growthrateToInsert;
                     if (growthRateString != null && Enum.TryParse(growthRateString.ToLower(), out tempGrowthrate))
@@ -126,7 +126,7 @@ public static class PlantListRetriever
                         growthrateToInsert = Growthrate.nothing;
                     }
                     
-                    PlantDetailsSummary plantDetailsSummary = new PlantDetailsSummary
+                    PlantDetailsSummary plantDetailsSummary = new PlantDetailsSummary   //Criação de objeto para tabela plant_details
                     {
                         edible_fruit = (bool)jsonDetailsResponse["edible_fruit"],
                         growth_rate = growthrateToInsert,
@@ -137,7 +137,7 @@ public static class PlantListRetriever
                     };
                     plantDetailsSummaries.Add(plantDetailsSummary);
 
-                    CultivationSummary cultivationSummary = new CultivationSummary
+                    CultivationSummary cultivationSummary = new CultivationSummary      //Criação de objeto para tabela cultivation
                     {
                         watering = (string)jsonDetailsResponse["watering"],
                         sunlight = (string)jsonDetailsResponse["sunlight"][0],
@@ -145,7 +145,7 @@ public static class PlantListRetriever
                     };
                     cultivationSummaries.Add(cultivationSummary);
                     
-                    string careLevelString = (string)jsonDetailsResponse["care_level"];
+                    string careLevelString = (string)jsonDetailsResponse["care_level"]; //Conversão de string para enum
                     Carelevel temp;
                     Carelevel levelToInsert;
                     if (careLevelString != null && Enum.TryParse(careLevelString.ToLower(), out temp))
@@ -157,7 +157,7 @@ public static class PlantListRetriever
                         levelToInsert = Carelevel.nothing;
                     }
                     
-                    DangerousPlantsSummary dangerousPlantsSummary = new DangerousPlantsSummary
+                    DangerousPlantsSummary dangerousPlantsSummary = new DangerousPlantsSummary  //Criação de objeto para tabela dangerous_plants
                     {
                         care_level = levelToInsert,
                         scientific_name = scientificName,
@@ -169,17 +169,17 @@ public static class PlantListRetriever
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e + " Perenual FALHOU NO ITEM DE VALOR " + i + "DA PAGINA " + j + " CICLO " + k);
+                    Console.WriteLine(e + " FALHA NO ITEM DE VALOR " + i + "DA PAGINA " + j + " CICLO " + k);
                     throw;
                 }
             }
             
-            using (var dbContext = new DBContext())     //TENHO UMA BATCH DE 30 
+            using (var dbContext = new DBContext())     //Tenho uma batch de 30 plantas ao final do loop
             {
                 DatabaseInsert databaseInsert = new DatabaseInsert(dbContext);
                 databaseInsert.InsertIntoDatabase(plantSummaries,dangerousPlantsSummaries, plantDetailsSummaries, cultivationSummaries);
                 Console.WriteLine("Inserted batch of page " + pagecheckpoint );
-                plantSummaries.Clear();
+                plantSummaries.Clear();                         //Limpa as listas
                 plantDetailsSummaries.Clear();
                 dangerousPlantsSummaries.Clear();
                 cultivationSummaries.Clear();
@@ -189,18 +189,18 @@ public static class PlantListRetriever
                 File.WriteAllText(jsonPath, newPageNumber);
             }
             
-            if (j == 2) //TROCA DE CHAVE
+            if (j == 2)                 //Se j = 2, minha chave já fez 90 requisições. Preciso trocá-la
             {
                 k += 1;
-                if (k < apiKeys.Count) //PARA IMPEDIR LISTA DE ESTOURAR
+                if (k < apiKeys.Count) //Impede lista de estourar
                 {
-                    j = -1;  //REINICIA O CICLO
+                    j = -1;             //Troca de chave e reinicia 
                     Console.WriteLine("Trocando para a chave " + apiKeys[k]);
                 }
             }
         }
     }
-
+    //Devolve uma página contendo 30 plantas
     private static JArray GetPerenualPlantPage(int pageNumber, string perenualKey, RestClient perenualClient)
     {
         var plantRequest = new RestRequest($"species-list?key={perenualKey}&page={pageNumber}")
